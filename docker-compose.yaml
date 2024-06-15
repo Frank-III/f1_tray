@@ -1,0 +1,13 @@
+version: "3" # You can specify the latest version supported by your Docker Compose
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    profiles:
+      - full
+      - backends

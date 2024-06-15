@@ -3,10 +3,34 @@
     windows_subsystem = "windows"
 )]
 
+mod client;
+mod env;
+mod keeper;
+mod log;
+mod data {
+    pub mod merge;
+    pub mod transformer;
+}
+mod commands {
+  pub mod history;
+  pub mod recap;
+};
+mod db;
+use std::sync::{Arc, Mutex};
+
+use serde_json::{json, Value};
+use sqlx::PgPool;
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_positioner::{Position, WindowExt};
+use tokio::sync::OnceCell;
+
+type LiveState = Arc<Mutex<Value>>;
+pub static DB: OnceCell<PgPool> = OnceCell::new();
+pub static APP_HANDLE: OnceCell<tauri::AppHandle> = OnceCell::new();
 
 fn main() {
+    env::init();
+    log::init();
     let quit = CustomMenuItem::new("quit".to_string(), "Quit").accelerator("Cmd+Q");
     let system_tray_menu = SystemTrayMenu::new().add_item(quit);
     tauri::Builder::default()
@@ -65,6 +89,16 @@ fn main() {
                 }
             }
             _ => {}
+        })
+        .setup(move |app| {
+            let app_handle = app.handle();
+            APP_HANDLE.set(app_handle.clone()).unwrap();
+            let state = Arc::new(Mutex::new(json!({})));
+            let db = db::init().expect("failed to setup db");
+            DB.set(db).unwrap();
+            client::spawn_init(app_handle, state);
+            keeper::spawn_init(db.clone(), state.clone());
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
