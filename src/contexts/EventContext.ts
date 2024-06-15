@@ -25,13 +25,26 @@ type Values = {
   // resume: () => void;
 };
 
+
 export const [EventContextProvider, useEventContext] = createContextProvider(
   (props: Values) => {
     const [liveState, setLiveState] = createStore<State>();
     const [carsData, setCarsData] = createStore<CarsData>();
     const [positions, setPositions] = createStore<Positions>();
 
+    const handleInitial = (message: State) => {
+      setLiveState(message)
+      if (message.carDataZ) {
 
+      }
+      if (message.positionZ) {
+
+      }
+    }
+    
+    const handleUpdate = (message: MessageData) => {
+
+    }
 
     // listen for the initial state
     createEffect(async () => {
@@ -53,51 +66,3 @@ export const [EventContextProvider, useEventContext] = createContextProvider(
     };
   },
 );
-
-// // Create a context to hold the value
-// const MyContext = createContext();
-
-// // Function to create and update context state
-// function useMyContext() {
-//   const [value, setValue] = createSignal('Initial Value');
-
-//   // Use createEffect to listen to Tauri events
-//   createEffect(() => {
-//     // Example: Listen to 'myEventName' from Tauri
-//     const handler = (event) => {
-//       setValue(event.payload); // Assuming payload contains the new value
-//     };
-
-//     // Subscribe to the event
-//     window.tauri.event.listen('myEventName', handler);
-
-//     // Clean up the effect
-//     return () => {
-//       window.tauri.event.remove('myEventName', handler);
-//     };
-//   });
-
-//   return { value };
-// }
-
-// // Example usage in a component
-// function MyComponent() {
-//   const { value } = useMyContext();
-
-//   return (
-//     <div>
-//     <p>Value from context: { value() } </p>
-//       < /div>
-//   );
-// }
-
-// // Wrap your application with the context provider
-// function App() {
-//   return (
-//     <MyContext.Provider>
-//     <MyComponent />
-//     < /MyContext.Provider>
-//   );
-// }
-
-// export default App;
